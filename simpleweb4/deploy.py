@@ -25,7 +25,7 @@ compiled_sol = compile_standard(
     },
     solc_version="0.6.0",
 )
-with open("compiled_sol.json", "w") as file:
+with open("compiled_code.json", "w") as file:
     json.dump(compiled_sol, file)
 abi = compiled_sol["contracts"]["simpleStorage.sol"]["simpleStorage"]["abi"]
 bytecode = compiled_sol["contracts"]["simpleStorage.sol"]["simpleStorage"]["evm"][
@@ -107,3 +107,18 @@ tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
 tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
 print("Updated!...")
 print(f"Updated value:  {_simpleStorage.functions.retrieve().call()}")
+print("Updating contract...")
+tx = _simpleStorage.functions.store(4).build_transaction(
+    {
+        "chainId": chainId,
+        "from": address,
+        "nonce": nonce + 4,
+        "gas": 2000000,
+        "gasPrice": w3.toWei("20", "gwei"),
+    }
+)
+signed_tx = w3.eth.account.sign_transaction(tx, private_key=private_key)
+tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+print("Update!...")
+print("Updated value: ", _simpleStorage.functions.retrieve().call())
